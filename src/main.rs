@@ -5,6 +5,9 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
+use std::os::linux::raw::time_t;
+use std::thread;
+use std::time::Duration;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
@@ -21,15 +24,15 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const GREEN: [f32; 4] = [0.2, 0.2, 0.2, 1.0];
+        const BACKGROUND: [f32; 4] = [0.2, 0.2, 0.2, 1.0];
 
         self.gl.draw(args.viewport(), |c, gl| {
-            clear(GREEN, gl);
+            clear(BACKGROUND, gl);
             let c = c.trans(0.0, 0.0);
             self.automata.update();
             let automata = &self.automata;
 
-            let grid = automata.get_rectangle_grid(10.0, 10.0, 480.0, 480.0);
+            let grid = automata.get_rectangle_grid(10.0, 10.0, 880.0, 880.0);
 
             for y in 0..grid.len() {
                 for x in 0..grid[0].len() {
@@ -49,7 +52,7 @@ impl App {
     }
 
     fn update(&mut self, args: &UpdateArgs) {
-
+        self.automata.update();
     }
 }
 
@@ -62,19 +65,33 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("Cellular Automata", [500, 500])
+    let mut window: Window = WindowSettings::new("Cellular Automata", [900, 900])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
 
+    let mut automata = Automata::new(100);
+    automata.birth_cell_at(10, 10);
+    automata.birth_cell_at(11, 11);
+    automata.birth_cell_at(10, 12);
+
+
+
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        automata: Automata::new(30),
+        automata,
     };
 
-    let mut events = Events::new(EventSettings::new());
+    let mut events = Events::new(EventSettings {
+        max_fps: 4,
+        ups: 8,
+        ups_reset: 0,
+        swap_buffers: true,
+        bench_mode: false,
+        lazy: false,
+    });
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
             app.render(&args);
