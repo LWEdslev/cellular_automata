@@ -29,7 +29,7 @@ impl App {
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BACKGROUND, gl);
             let c = c.trans(0.0, 0.0);
-            self.automata.update();
+
             let automata = &self.automata;
 
             let grid = automata.get_rectangle_grid(10.0, 10.0, 880.0, 880.0);
@@ -72,10 +72,18 @@ fn main() {
         .unwrap();
 
     let mut automata = Automata::new(100);
-    automata.birth_cell_at(10, 10);
-    automata.birth_cell_at(11, 11);
-    automata.birth_cell_at(10, 12);
+    automata.birth_cell_at(40, 40);
+    automata.birth_cell_at(41, 40);
+    automata.birth_cell_at(39, 40);
+    automata.birth_cell_at(40, 41);
+    automata.birth_cell_at(39, 39);
+    automata.birth_cell_at(38, 39);
 
+    automata.birth_cell_at(70, 20);
+    automata.birth_cell_at(69, 20);
+    automata.birth_cell_at(71, 20);
+    automata.birth_cell_at(71, 19);
+    automata.birth_cell_at(70, 18);
 
 
     // Create a new game and run it.
@@ -85,8 +93,8 @@ fn main() {
     };
 
     let mut events = Events::new(EventSettings {
-        max_fps: 4,
-        ups: 8,
+        max_fps: 1,
+        ups: 1,
         ups_reset: 0,
         swap_buffers: true,
         bench_mode: false,

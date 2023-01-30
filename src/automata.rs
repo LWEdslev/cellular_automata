@@ -34,33 +34,27 @@ impl Automata {
 
                 let neighbours = old.get_neighbours(x, y);
 
+
+                let old_cell = &old.grid[y][x];
+
+                let neighbours = old.get_neighbours(x, y);
+
                 let neighbour_birth_sum: f32 = neighbours
                     .iter()
-                    .map(|c| c.g)
+                    .map(|c| c.r)
                     .sum();
 
-                let mut red = old.grid[y][x].r - 0.1;
-                if red <= 0.0 {
-                    red = if neighbour_birth_sum >= 1.0 {
-                        1.0
-                    } else {
-                        0.0
-                    }
-                }
-
-                let green = if red > 0.5 {
-                    red - 0.2//red
-                } else {
-                    0.0
+                let red = match neighbour_birth_sum {
+                    2.0 => self.grid[y][x].r,
+                    3.0 => 1.0,
+                    _ => 0.0,
                 };
 
-                let blue = 0.125 * neighbours
-                    .iter()
-                    .filter(|cell| cell.r > 0.0) //is alive
-                    .count() as f32; //count them
-                let blue = if red > 0.0 { blue } else { 0.0 };
+                let green = old_cell.g;
 
-                let (red, green, blue) = if blue > 0.7 { (0.0, 0.0, 0.0) } else { (red, green, blue)};
+                let blue = if old_cell.r != 0.0 && red == 0.0 { old_cell.r } else { old_cell.b - 0.1 };
+
+                let blue = if red == 0.0 { blue } else { 0.0 };
 
                 self.grid[y][x].change_color(red, green, blue);
             }
