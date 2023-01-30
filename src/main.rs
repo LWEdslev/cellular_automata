@@ -9,7 +9,7 @@ extern crate piston;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
+use piston::input::{RenderArgs, RenderEvent};
 use piston::window::WindowSettings;
 use crate::automata::Automata;
 
@@ -41,16 +41,8 @@ impl App {
                 }
             }
 
-            //let rect = rectangle::rectangle_by_corners(0f64, 0f64, 100f64, 80f64);
-
-            //rectangle(RED, rect, c.transform, gl);
-            // Draw a box rotating around the middle of the screen.
-            //rectangle(RED, square, transform, gl);
+            self.automata.update();
         });
-    }
-
-    fn update(&mut self, _args: &UpdateArgs) {
-        self.automata.update();
     }
 }
 
@@ -69,7 +61,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut automata = Automata::new(200);
+    let mut automata = Automata::new(300);
     automata.birth_cell_at(40, 40);
     automata.birth_cell_at(41, 40);
     automata.birth_cell_at(39, 40);
@@ -91,9 +83,9 @@ fn main() {
     };
 
     let mut events = Events::new(EventSettings {
-        max_fps: 20,
-        ups: 20,
-        ups_reset: 2,
+        max_fps: 60,
+        ups: 0,
+        ups_reset: 0,
         swap_buffers: true,
         bench_mode: false,
         lazy: false,
@@ -101,10 +93,6 @@ fn main() {
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
             app.render(&args);
-        }
-
-        if let Some(args) = e.update_args() {
-            app.update(&args);
         }
     }
 }
