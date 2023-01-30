@@ -19,21 +19,6 @@ impl Automata {
 
         for y in 0..self.grid.len() {
             for x in 0..self.grid[0].len() {
-                //temporary garbage
-                //self.grid[y][x].change_color(0.5 + 3.0*(x as f32 / 100.0), 0.7 - 3.0*(y as f32 / 100.0), 0.2 - ((x as i32 - y as i32)as f32 / 100.0));
-
-                /*
-
-                RED is life, decreases by 0.1 every turn, if it is 0 cell is dead
-                GREEN is birthability, if life is in [0.8, 0.5] it will be [0.5, 0.2]
-                  if sum of green neighbour values is larger than 1 a cell will come alive if dead
-                BLUE is coziness
-                  0.125 * alive neighbours
-                  no effect yet
-                */
-
-                let neighbours = old.get_neighbours(x, y);
-
 
                 let old_cell = &old.grid[y][x];
 
@@ -44,9 +29,9 @@ impl Automata {
                     .map(|c| c.r)
                     .sum();
 
-                let red = match neighbour_birth_sum {
-                    2.0 => self.grid[y][x].r,
-                    3.0 => 1.0,
+                let red = match neighbour_birth_sum as usize {
+                    2 => self.grid[y][x].r,
+                    3 => 1.0,
                     _ => 0.0,
                 };
 

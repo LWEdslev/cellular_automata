@@ -5,9 +5,7 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
 
-use std::os::linux::raw::time_t;
-use std::thread;
-use std::time::Duration;
+
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{EventSettings, Events};
@@ -32,7 +30,7 @@ impl App {
 
             let automata = &self.automata;
 
-            let grid = automata.get_rectangle_grid(10.0, 10.0, 880.0, 880.0);
+            let grid = automata.get_rectangle_grid(0.0, 0.0, 1000.0 , 1000.0);
 
             for y in 0..grid.len() {
                 for x in 0..grid[0].len() {
@@ -51,7 +49,7 @@ impl App {
         });
     }
 
-    fn update(&mut self, args: &UpdateArgs) {
+    fn update(&mut self, _args: &UpdateArgs) {
         self.automata.update();
     }
 }
@@ -65,13 +63,13 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("Cellular Automata", [900, 900])
+    let mut window: Window = WindowSettings::new("Cellular Automata", [1920, 1080])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
 
-    let mut automata = Automata::new(100);
+    let mut automata = Automata::new(200);
     automata.birth_cell_at(40, 40);
     automata.birth_cell_at(41, 40);
     automata.birth_cell_at(39, 40);
@@ -93,9 +91,9 @@ fn main() {
     };
 
     let mut events = Events::new(EventSettings {
-        max_fps: 1,
-        ups: 1,
-        ups_reset: 0,
+        max_fps: 20,
+        ups: 20,
+        ups_reset: 2,
         swap_buffers: true,
         bench_mode: false,
         lazy: false,
