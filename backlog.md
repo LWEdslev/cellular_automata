@@ -1,0 +1,4 @@
+- refactoring
+- modularization
+- cell behaviour dependent on attributes other than color
+- make array instead of vec when possible

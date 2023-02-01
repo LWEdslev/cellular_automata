@@ -24,22 +24,28 @@ impl Automata {
 
                 let neighbours = old.get_neighbours(x, y);
 
-                let neighbour_birth_sum: f32 = neighbours
+                let neighbour_birth_sum = neighbours
                     .iter()
-                    .map(|c| c.r)
-                    .sum();
+                    .filter(|cell| cell.active)
+                    .count();
 
-                let red = match neighbour_birth_sum as usize {
-                    2 => self.grid[y][x].r,
-                    3 => 1.0,
-                    _ => 0.0,
-                };
+                let cell = &mut self.grid[y][x];
+
+                cell.set_active(match neighbour_birth_sum {
+                    2 => cell.active,
+                    3 => true,
+                    _ => false,
+                });
+
+                let cell = &self.grid[y][x];
+
+                let red = if cell.active { 1.0 } else { 0.0 };
 
                 let green = old_cell.g;
 
-                let blue = if old_cell.r != 0.0 && red == 0.0 { old_cell.r } else { old_cell.b - 0.1 };
+                let blue = if old_cell.active && !cell.active { 1.0 } else { old_cell.b - 0.1 };
 
-                let blue = if red == 0.0 { blue } else { 0.0 };
+                let blue = if !cell.active { blue } else { 0.0 };
 
                 self.grid[y][x].change_color(red, green, blue);
             }
@@ -85,7 +91,9 @@ impl Automata {
     }
 
     pub fn birth_cell_at(&mut self, x: usize, y: usize) {
-        self.grid[y][x].change_color(1.0, 0.0, 0.0)
+        let cell = &mut self.grid[y][x];
+        cell.change_color(1.0, 0.0, 0.0);
+        cell.active = true;
     }
 }
 
@@ -94,11 +102,12 @@ pub struct Cell {
     r: f32,
     g: f32,
     b: f32,
+    pub active: bool,
 }
 
 impl Cell {
     fn new(r: f32, g: f32, b: f32) -> Cell {
-        Cell { r, g, b }
+        Cell { r, g, b, active: false }
     }
 
     pub fn color(&self) -> [f32; 4] {
@@ -107,6 +116,10 @@ impl Cell {
 
     pub fn to_rectangle(&self, x: f64, y: f64, width: f64, height: f64) -> Rectangle {
         rectangle::rectangle_by_corners(x, y, x + width, y + height)
+    }
+
+    fn set_active(&mut self, b: bool) {
+        self.active = b;
     }
 
     fn change_color(&mut self, r: f32, g: f32, b: f32) {

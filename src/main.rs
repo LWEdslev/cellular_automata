@@ -61,7 +61,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut automata = Automata::new(300);
+    let mut automata = Automata::new(100);
     automata.birth_cell_at(40, 40);
     automata.birth_cell_at(41, 40);
     automata.birth_cell_at(39, 40);
@@ -83,8 +83,8 @@ fn main() {
     };
 
     let mut events = Events::new(EventSettings {
-        max_fps: 60,
-        ups: 0,
+        max_fps: 20,
+        ups: 20,
         ups_reset: 0,
         swap_buffers: true,
         bench_mode: false,
