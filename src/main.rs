@@ -32,8 +32,7 @@ impl App {
 
             let updates = automata.get_rectangle_grid(0.0, 0.0, 1000.0 , 1000.0);
 
-            for (rect, cell) in updates {
-                let color = cell.color();
+            for (rect, color) in updates {
                 rectangle(color, rect, c.transform, gl);
             }
 

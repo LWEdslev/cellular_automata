@@ -84,23 +84,19 @@ impl Automata {
         buf
     }
 
-    pub fn get_rectangle_grid(&self, x_pos: f64, y_pos: f64, width: f64, height: f64) -> Vec<(Rectangle, &Cell)> {
+    pub fn get_rectangle_grid(&self, x_pos: f64, y_pos: f64, width: f64, height: f64) -> Vec<(Rectangle, [f32; 4])> {
         let width = width / self.grid[0].len() as f64;
         let height = height / self.grid.len() as f64;
 
         let mut out = Vec::new();
 
-        for Point(x,y) in &self.updated_cells {
+        for Point(x,y) in self.updated_cells.iter() {
             let cell = &self.grid[*y][*x];
-            let (x, y, width, height) = (*x as f64, *y as f64, width as f64, height as f64);
-            out.push((cell.to_rectangle(x_pos + x * width, y_pos + y * height, width, height), cell));
+            let (x, y, width, height) = (*x as f64, *y as f64, width, height);
+            out.push((cell.to_rectangle(x_pos + x * width, y_pos + y * height, width, height), cell.color()));
         }
 
         out
-    }
-
-    pub fn cell_at(&self, x: usize, y: usize) -> &Cell {
-        &self.grid[y][x]
     }
 
     pub fn birth_cell_at(&mut self, x: usize, y: usize) {
@@ -129,10 +125,6 @@ impl Cell {
 
     pub fn to_rectangle(&self, x: f64, y: f64, width: f64, height: f64) -> Rectangle {
         rectangle::rectangle_by_corners(x, y, x + width, y + height)
-    }
-
-    fn set_active(&mut self, b: bool) {
-        self.active = b;
     }
 
     fn change_color(&mut self, r: f32, g: f32, b: f32) {
