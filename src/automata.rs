@@ -2,15 +2,20 @@ use graphics::rectangle;
 use graphics::types::Rectangle;
 
 #[derive(Clone)]
+struct Point(usize, usize);
+
+#[derive(Clone)]
 pub struct Automata {
     grid: Vec<Vec<Cell>>,
+    updated_cells: Vec<Point>,
 }
 
 impl Automata {
     pub fn new(size: usize) -> Automata {
         assert!(size > 0);
         Automata {
-            grid: vec![vec![Cell::new(0.0, 0.0, 0.0); size]; size]
+            grid: vec![vec![Cell::new(0.0, 0.0, 0.0); size]; size],
+            updated_cells: vec![],
         }
     }
 
@@ -29,24 +34,35 @@ impl Automata {
                     .filter(|cell| cell.active)
                     .count();
 
-                let cell = &mut self.grid[y][x];
-
-                cell.set_active(match neighbour_birth_sum {
-                    2 => cell.active,
-                    3 => true,
-                    _ => false,
-                });
-
                 let cell = &self.grid[y][x];
 
-                let red = if cell.active { 1.0 } else { 0.0 };
+                let (alive, changed) = match neighbour_birth_sum {
+                    2 => (cell.active, false),
+                    3 => (true, !cell.active),
+                    _ => (false, cell.active),
+                };
 
-                let green = old_cell.g;
+                let cooldown = (!alive && changed) || old_cell.b > 0.0;
 
-                let blue = if old_cell.active && !cell.active { 1.0 } else { old_cell.b - 0.1 };
+                let (red, green, blue, updated) = if alive {
+                    let red = 1.0;
+                    let blue = 0.0;
+                    let green = 0.0;
+                    (red, green, blue, old_cell.active)
+                } else if cooldown {
+                    let just_died = !alive && changed;
+                    let blue = if just_died { 1.0 } else { old_cell.b - 0.1 };
+                    let (red, green) = (0.0, 0.0);
+                    (red, green, blue, true)
+                } else {
+                    (0.0, 0.0, 0.0, false)
+                };
 
-                let blue = if !cell.active { blue } else { 0.0 };
+                if updated {
+                    self.updated_cells.push(Point(x, y));
+                }
 
+                self.grid[y][x].active = alive;
                 self.grid[y][x].change_color(red, green, blue);
             }
         }
@@ -68,21 +84,18 @@ impl Automata {
         buf
     }
 
-    pub fn get_rectangle_grid(&self, x_pos: f64, y_pos: f64, width: f64, height: f64) -> Vec<Vec<Rectangle>> {
+    pub fn get_rectangle_grid(&self, x_pos: f64, y_pos: f64, width: f64, height: f64) -> Vec<(Rectangle, &Cell)> {
         let width = width / self.grid[0].len() as f64;
         let height = height / self.grid.len() as f64;
 
         let mut out = Vec::new();
 
-        for y in 0..self.grid.len() {
-            let mut row = Vec::new();
-            for x in 0..self.grid[0].len() {
-                let cell = &self.grid[y][x];
-                let (x, y, width, height) = (x as f64, y as f64, width as f64, height as f64);
-                row.push(cell.to_rectangle(x_pos + x * width, y_pos + y * height, width, height));
-            }
-            out.push(row);
+        for Point(x,y) in &self.updated_cells {
+            let cell = &self.grid[*y][*x];
+            let (x, y, width, height) = (*x as f64, *y as f64, width as f64, height as f64);
+            out.push((cell.to_rectangle(x_pos + x * width, y_pos + y * height, width, height), cell));
         }
+
         out
     }
 

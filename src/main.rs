@@ -22,7 +22,7 @@ impl App {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const BACKGROUND: [f32; 4] = [0.2, 0.2, 0.2, 1.0];
+        const BACKGROUND: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 
         self.gl.draw(args.viewport(), |c, gl| {
             clear(BACKGROUND, gl);
@@ -30,15 +30,11 @@ impl App {
 
             let automata = &self.automata;
 
-            let grid = automata.get_rectangle_grid(0.0, 0.0, 1000.0 , 1000.0);
+            let updates = automata.get_rectangle_grid(0.0, 0.0, 1000.0 , 1000.0);
 
-            for y in 0..grid.len() {
-                for x in 0..grid[0].len() {
-                    let cell = automata.cell_at(x, y);
-                    let color = cell.color();
-                    let rect = grid[y][x];
-                    rectangle(color, rect, c.transform, gl);
-                }
+            for (rect, cell) in updates {
+                let color = cell.color();
+                rectangle(color, rect, c.transform, gl);
             }
 
             self.automata.update();
@@ -61,7 +57,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let mut automata = Automata::new(100);
+    let mut automata = Automata::new(800);
     automata.birth_cell_at(40, 40);
     automata.birth_cell_at(41, 40);
     automata.birth_cell_at(39, 40);
