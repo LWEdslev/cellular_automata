@@ -20,18 +20,21 @@ impl Automata {
     }
 
     pub fn update(&mut self) {
-        let old = self.clone();
+        self.updated_cells.clear();
 
         for y in 0..self.grid.len() {
             for x in 0..self.grid[0].len() {
 
-                let old_cell = &old.grid[y][x];
+                let (old_b, old_active) = (self.grid[y][x].old_b, self.grid[y][x].old_active);
 
-                let neighbours = old.get_neighbours(x, y);
+                self.grid[y][x].old_b = self.grid[y][x].b;
+                self.grid[y][x].old_active = self.grid[y][x].active;
+
+                let neighbours = self.get_neighbours(x, y);
 
                 let neighbour_birth_sum = neighbours
                     .iter()
-                    .filter(|cell| cell.active)
+                    .filter(|cell| cell.old_active)
                     .count();
 
                 let cell = &self.grid[y][x];
@@ -42,16 +45,16 @@ impl Automata {
                     _ => (false, cell.active),
                 };
 
-                let cooldown = (!alive && changed) || old_cell.b > 0.0;
+                let cooldown = (!alive && changed) || old_b > 0.0;
 
                 let (red, green, blue, updated) = if alive {
                     let red = 1.0;
                     let blue = 0.0;
                     let green = 0.0;
-                    (red, green, blue, old_cell.active)
+                    (red, green, blue, old_active)
                 } else if cooldown {
                     let just_died = !alive && changed;
-                    let blue = if just_died { 1.0 } else { old_cell.b - 0.1 };
+                    let blue = if just_died { 1.0 } else { old_b - 0.1 };
                     let (red, green) = (0.0, 0.0);
                     (red, green, blue, true)
                 } else {
@@ -92,8 +95,8 @@ impl Automata {
 
         for Point(x,y) in self.updated_cells.iter() {
             let cell = &self.grid[*y][*x];
-            let (x, y, width, height) = (*x as f64, *y as f64, width, height);
-            out.push((cell.to_rectangle(x_pos + x * width, y_pos + y * height, width, height), cell.color()));
+            let (x, y, width, height) = ((*x as f64)*width, (*y as f64)*height, width, height);
+            out.push((rectangle::rectangle_by_corners(x, y, x + width, y + height), cell.color()));
         }
 
         out
@@ -112,20 +115,33 @@ pub struct Cell {
     g: f32,
     b: f32,
     pub active: bool,
+    old_r: f32,
+    old_g: f32,
+    old_b: f32,
+    old_active: bool,
 }
 
 impl Cell {
     fn new(r: f32, g: f32, b: f32) -> Cell {
-        Cell { r, g, b, active: false }
+        Cell {
+            r,
+            g,
+            b,
+            active: false,
+            old_r: 0.0,
+            old_b: 0.0,
+            old_g: 0.0,
+            old_active: false,
+        }
     }
 
     pub fn color(&self) -> [f32; 4] {
         [self.r, self.g, self.b, 1.0]
     }
 
-    pub fn to_rectangle(&self, x: f64, y: f64, width: f64, height: f64) -> Rectangle {
+    /*pub fn to_rectangle(&self, x: f64, y: f64, width: f64, height: f64) -> Rectangle {
         rectangle::rectangle_by_corners(x, y, x + width, y + height)
-    }
+    }*/
 
     fn change_color(&mut self, r: f32, g: f32, b: f32) {
         self.r = r;

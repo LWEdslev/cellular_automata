@@ -12,6 +12,7 @@ use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent};
 use piston::window::WindowSettings;
 use crate::automata::Automata;
+use rand::Rng;
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
@@ -30,7 +31,7 @@ impl App {
 
             let automata = &self.automata;
 
-            let updates = automata.get_rectangle_grid(0.0, 0.0, 1000.0 , 1000.0);
+            let updates = automata.get_rectangle_grid(0.0, 0.0, 900.0 , 900.0);
 
             for (rect, color) in updates {
                 rectangle(color, rect, c.transform, gl);
@@ -50,26 +51,25 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create a Glutin window.
-    let mut window: Window = WindowSettings::new("Cellular Automata", [1920, 1080])
+    let mut window: Window = WindowSettings::new("Cellular Automata", [900, 900])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
 
-    let mut automata = Automata::new(800);
-    automata.birth_cell_at(40, 40);
-    automata.birth_cell_at(41, 40);
-    automata.birth_cell_at(39, 40);
-    automata.birth_cell_at(40, 41);
-    automata.birth_cell_at(39, 39);
-    automata.birth_cell_at(38, 39);
+    let size = 300;
 
-    automata.birth_cell_at(70, 20);
-    automata.birth_cell_at(69, 20);
-    automata.birth_cell_at(71, 20);
-    automata.birth_cell_at(71, 19);
-    automata.birth_cell_at(70, 18);
+    let mut automata = Automata::new(size);
 
+    let mut rng = rand::thread_rng();
+
+    for x in 0..size {
+        for y in 0..size {
+            if rng.gen::<f64>() < 0.2 {
+                automata.birth_cell_at(x, y);
+            }
+        }
+    }
 
     // Create a new game and run it.
     let mut app = App {
@@ -78,9 +78,9 @@ fn main() {
     };
 
     let mut events = Events::new(EventSettings {
-        max_fps: 20,
-        ups: 20,
-        ups_reset: 0,
+        max_fps: 60,
+        ups: 60,
+        ups_reset: 2,
         swap_buffers: true,
         bench_mode: false,
         lazy: false,
