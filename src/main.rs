@@ -31,7 +31,7 @@ impl App {
 
             let automata = &self.automata;
 
-            let updates = automata.get_rectangle_grid(0.0, 0.0, 900.0 , 900.0);
+            let updates = automata.get_rectangle_grid(0.0, 0.0, args.window_size[0], args.window_size[1]);
 
             for (rect, color) in updates {
                 rectangle(color, rect, c.transform, gl);
@@ -41,10 +41,6 @@ impl App {
         });
     }
 }
-
-
-
-
 
 fn main() {
     // Change this to OpenGL::V2_1 if not working.
@@ -61,11 +57,13 @@ fn main() {
 
     let mut automata = Automata::new(size);
 
+    println!("{}", automata.get_neighbours(50, 50).len());
+
     let mut rng = rand::thread_rng();
 
     for x in 0..size {
         for y in 0..size {
-            if rng.gen::<f64>() < 0.2 {
+            if rng.gen::<f64>() < 0.3 {
                 automata.birth_cell_at(x, y);
             }
         }
