@@ -21,5 +21,5 @@ fn main() {
         }
     }
 
-    gui::run(automata, 800, 60);
+    gui::run(automata, 800, 20);
 }

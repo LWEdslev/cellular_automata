@@ -19,22 +19,18 @@ impl<T: Drawable> App<T> {
     fn render(&mut self, args: &RenderArgs) {
         use graphics::*;
 
-        const BACKGROUND: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
-
         self.gl.draw(args.viewport(), |c, gl| {
-            clear(BACKGROUND, gl);
             let c = c.trans(0.0, 0.0);
 
-            let automata = &self.automata;
+            let automata = &mut self.automata;
 
             let updates = automata.get_new_graphics(args.window_size[0], args.window_size[1]);
 
             for (rect, color) in updates {
                 rectangle(color, rect, c.transform, gl);
             }
-
-            self.automata.update();
         });
+        self.automata.update();
     }
 }
 

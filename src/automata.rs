@@ -13,21 +13,9 @@ pub struct Automata {
 
 impl Drawable for Automata {
     fn update(&mut self) {
-        self.updated_cells.clear();
 
         for y in 0..self.grid.len() {
             for x in 0..self.grid[0].len() {
-
-                let cell = &self.grid[y][x];
-
-                let (old_b, old_active) = (cell.old_b, cell.old_active);
-
-                let mut cell = &mut self.grid[y][x];
-
-                cell.old_b = cell.b;
-                cell.old_active = cell.active;
-
-                let cell = &self.grid[y][x];
 
                 let neighbours = self.get_neighbours(x, y);
 
@@ -36,7 +24,7 @@ impl Drawable for Automata {
                     .filter(|cell| cell.old_active)
                     .count();
 
-
+                let cell = &self.grid[y][x];
 
                 let (alive, changed) = match neighbour_birth_sum {
                     2 => (cell.active, false),
@@ -44,13 +32,13 @@ impl Drawable for Automata {
                     _ => (false, cell.active),
                 };
 
-                let cooldown = (!alive && changed) || old_b > 0.;
+                let cooldown = (!alive && changed) || cell.b > 0.;
 
                 let (red, green, blue, updated) = if alive { //is alive and red
-                    (1., 0., 0., old_active)
+                    (1., 0., 0., !cell.old_active)
                 } else if cooldown { //in blue cooldown period
                     let just_died = !alive && changed;
-                    let blue = if just_died { 1. } else { old_b - 0.1 };
+                    let blue = if just_died { 1. } else { cell.b - 0.1 };
                     let (red, green) = (0., 0.);
                     (red, green, blue, true)
                 } else { //dead and nothing changed
@@ -62,15 +50,23 @@ impl Drawable for Automata {
                 }
 
                 //updating attributes of cell
-                let mut cell = &mut self.grid[y][x];
+                let cell = &mut self.grid[y][x];
 
                 cell.active = alive;
                 cell.change_color(red, green, blue);
             }
         }
+
+        for y in 0..self.grid.len() {
+            for x in 0..self.grid[0].len() {
+                let mut cell = &mut self.grid[y][x];
+                cell.old_active = cell.active;
+                cell.old_b = cell.b;
+            }
+        }
     }
 
-    fn get_new_graphics(&self, width: f64, height: f64) -> Vec<(Rectangle, Color)> {
+    fn get_new_graphics(&mut self, width: f64, height: f64) -> Vec<(Rectangle, Color)> {
         let width = width / self.grid[0].len() as f64;
         let height = height / self.grid.len() as f64;
 
@@ -82,6 +78,8 @@ impl Drawable for Automata {
 
             out.push((rectangle::rectangle_by_corners(x, y, x + width, y + height), cell.color()));
         }
+
+        self.updated_cells.clear();
 
         out
     }
@@ -117,6 +115,8 @@ impl Automata {
         let cell = &mut self.grid[y][x];
         cell.change_color(1., 0., 0.);
         cell.active = true;
+        cell.old_active = true;
+        self.updated_cells.push(Point(x, y));
     }
 }
 
