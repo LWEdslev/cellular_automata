@@ -24,7 +24,7 @@ impl Drawable for Automata {
                     .filter(|cell| cell.old_active)
                     .count();
 
-                let cell = &self.grid[y][x];
+                let cell = &mut self.grid[y][x];
 
                 let (alive, changed) = match neighbour_birth_sum {
                     2 => (cell.active, false),
@@ -32,35 +32,21 @@ impl Drawable for Automata {
                     _ => (false, cell.active),
                 };
 
-                let cooldown = (!alive && changed) || cell.b > 0.;
+                let updated = (!alive && changed) || cell.cooldown > 0;
 
-                let (red, green, blue, updated) = if alive { //is alive and red
-                    (1., 0., 0., !cell.old_active)
-                } else if cooldown { //in blue cooldown period
-                    let just_died = !alive && changed;
-                    let blue = if just_died { 1. } else { cell.b - 0.1 };
-                    let (red, green) = (0., 0.);
-                    (red, green, blue, true)
-                } else { //dead and nothing changed
-                    (0., 0., 0., false)
-                };
+                cell.update_cooldown();
 
                 if updated { //if the cell has been updated it should be added to the updated cells
                     self.updated_cells.push(Point(x, y));
                 }
 
-                //updating attributes of cell
-                let cell = &mut self.grid[y][x];
-
                 cell.active = alive;
-                cell.change_color(red, green, blue);
             }
         }
 
         for Point(x, y) in &self.updated_cells {
             let mut cell = &mut self.grid[*y][*x];
             cell.old_active = cell.active;
-            cell.old_b = cell.b;
         }
     }
 
@@ -87,7 +73,7 @@ impl Automata {
     pub fn new(size: usize) -> Automata {
         assert!(size > 0);
 
-        let grid = vec![vec![Cell::new(0., 0., 0.); size]; size];
+        let grid = vec![vec![Cell::new(false); size]; size];
         let updated_cells = vec![];
 
         Automata {
@@ -111,7 +97,6 @@ impl Automata {
 
     pub fn birth_cell_at(&mut self, x: usize, y: usize) {
         let cell = &mut self.grid[y][x];
-        cell.change_color(1., 0., 0.);
         cell.active = true;
         cell.old_active = true;
         self.updated_cells.push(Point(x, y));
@@ -120,33 +105,38 @@ impl Automata {
 
 #[derive(Clone)]
 pub struct Cell {
-    r: f32,
-    g: f32,
-    b: f32,
-    pub active: bool,
-    old_b: f32,
+    active: bool,
     old_active: bool,
+    cooldown: u8,
 }
 
 impl Cell {
-    fn new(r: f32, g: f32, b: f32) -> Cell {
+    fn new(active: bool) -> Cell {
         Cell {
-            r,
-            g,
-            b,
-            active: false,
-            old_b: 0.,
-            old_active: false,
+            active,
+            old_active: active,
+            cooldown: 0,
         }
     }
 
-    pub fn color(&self) -> Color {
-        [self.r, self.g, self.b, 1.]
+    fn update_cooldown(&mut self) {
+        self.cooldown = if !self.active && self.old_active {
+            10
+        } else if self.cooldown > 0 {
+            self.cooldown - 1
+        } else {
+            0
+        }
+
     }
 
-    fn change_color(&mut self, r: f32, g: f32, b: f32) {
-        self.r = r;
-        self.g = g;
-        self.b = b;
+    pub fn color(&self) -> Color {
+        if self.active {
+            [1., 0., 0., 1.]
+        } else if self.cooldown > 0 {
+            [0., 0., self.cooldown as f32 / 10., 1.]
+        } else {
+            [0., 0., 0., 1.]
+        }
     }
 }
