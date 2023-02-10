@@ -17,8 +17,6 @@ fn main() {
             None => default,
     }};
 
-
-
     let fps = get_value("fps", DEFAULT_FPS);
 
     let grid_size = get_value("grid", DEFAULT_GRID_SIZE) as usize;
@@ -32,7 +30,7 @@ fn main() {
 
     for x in 0..grid_size {
         for y in 0..grid_size {
-            if rng.gen::<f64>() < 0.3 {
+            if rng.gen_bool(0.3) {
                 automata.birth_cell_at(x, y);
             }
         }
