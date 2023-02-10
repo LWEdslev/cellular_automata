@@ -15,3 +15,5 @@ for user specified configuration where
 - FPS changes the iteration speed of the cells.
 - Grid describes how many cells per side of the grid (if grid=n there will be n² cells)
 - Window describes the length and width of the square window in pixels
+
+Project is under MIT license
