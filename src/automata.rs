@@ -13,13 +13,9 @@ pub struct Automata {
 
 impl Drawable for Automata {
     fn update(&mut self) {
-
         for y in 0..self.grid.len() {
             for x in 0..self.grid[0].len() {
-
-                let neighbours = self.get_neighbours(x, y);
-
-                let neighbour_birth_sum = neighbours
+                let neighbour_birth_sum = self.get_neighbours(x, y)
                     .iter()
                     .filter(|cell| cell.old_active)
                     .count();
@@ -32,20 +28,16 @@ impl Drawable for Automata {
                     _ => (false, cell.active),
                 };
 
-                let updated = (!alive && changed) || cell.cooldown > 0;
-
-                cell.update_cooldown();
-
-                if updated { //if the cell has been updated it should be added to the updated cells
+                if changed || cell.cooldown > 0 { //if the cell has been updated it should be added to the updated cells
                     self.updated_cells.push(Point(x, y));
+                    cell.active = alive;
+                    cell.update_cooldown();
                 }
-
-                cell.active = alive;
             }
         }
 
         for Point(x, y) in &self.updated_cells {
-            let mut cell = &mut self.grid[*y][*x];
+            let cell = &mut self.grid[*y][*x];
             cell.old_active = cell.active;
         }
     }
