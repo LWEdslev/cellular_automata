@@ -57,12 +57,10 @@ impl Drawable for Automata {
             }
         }
 
-        for y in 0..self.grid.len() {
-            for x in 0..self.grid[0].len() {
-                let mut cell = &mut self.grid[y][x];
-                cell.old_active = cell.active;
-                cell.old_b = cell.b;
-            }
+        for Point(x, y) in &self.updated_cells {
+            let mut cell = &mut self.grid[*y][*x];
+            cell.old_active = cell.active;
+            cell.old_b = cell.b;
         }
     }
 

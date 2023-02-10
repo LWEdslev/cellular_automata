@@ -13,7 +13,7 @@ fn main() {
 
     let get_value = |search_param: &str, default: u64| {
         match args.iter().find(|s| s.to_lowercase().contains(&format!("{}=", search_param))) {
-            Some(s) => s.split('=').last().unwrap().parse().expect(&format!("There must be a number after {}=", search_param)),
+            Some(s) => s.split('=').last().unwrap().parse().unwrap_or_else(|_| panic!("There must be a number after {}=", search_param)),
             None => default,
     }};
 
